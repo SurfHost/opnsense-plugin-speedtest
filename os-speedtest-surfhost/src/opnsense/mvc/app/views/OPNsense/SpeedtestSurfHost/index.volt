@@ -36,21 +36,19 @@
         return $('<span/>').text(url || '');
     }
 
-    function minmax(v, unit) {
-        return $('<span/>')
-            .append($('<b/>').text(v.avg + ' ' + unit))
-            .append(document.createTextNode(' (min ' + v.min + ', max ' + v.max + ')'));
-    }
-
+    // one "Average" row under the history, over every stored test (not only
+    // the 50 shown), hidden while there are none
     function statReload() {
         ajaxGet('/api/speedtestsurfhost/service/stat', {}, function (s) {
-            if (!s || s.error) {
+            if (!s || s.error || !s.samples) {
+                $('#stat_row').hide();
                 return;
             }
-            $('#stat_samples').text(s.samples + (s.samples ? ' (' + s.period.oldest + ' – ' + s.period.youngest + ')' : ''));
-            $('#stat_download').empty().append(minmax(s.download, 'Mbps'));
-            $('#stat_upload').empty().append(minmax(s.upload, 'Mbps'));
-            $('#stat_latency').empty().append(minmax(s.latency, 'ms'));
+            $('#stat_label').text('{{ lang._("Average") }} (' + s.samples + ' {{ lang._("tests") }})');
+            $('#stat_download').text(Number(s.download.avg).toFixed(2));
+            $('#stat_upload').text(Number(s.upload.avg).toFixed(2));
+            $('#stat_latency').text(Number(s.latency.avg).toFixed(2));
+            $('#stat_row').show();
         });
     }
 
@@ -256,18 +254,6 @@
             </tbody>
         </table>
 
-        <table class="table table-condensed">
-            <thead>
-                <tr><th colspan="2"><h3 style="margin:0">{{ lang._('Statistics') }}</h3></th></tr>
-            </thead>
-            <tbody>
-                <tr><td style="width:22%">{{ lang._('Tests') }}</td><td id="stat_samples">0</td></tr>
-                <tr><td>{{ lang._('Download') }}</td><td id="stat_download"></td></tr>
-                <tr><td>{{ lang._('Upload') }}</td><td id="stat_upload"></td></tr>
-                <tr><td>{{ lang._('Latency') }}</td><td id="stat_latency"></td></tr>
-            </tbody>
-        </table>
-
         <table class="table table-condensed table-striped">
             <thead>
                 <tr>
@@ -293,6 +279,17 @@
                 </tr>
             </thead>
             <tbody id="log_block"></tbody>
+            <tfoot>
+                <tr id="stat_row" style="display:none; font-weight:bold">
+                    <td id="stat_label"></td>
+                    <td></td>
+                    <td></td>
+                    <td id="stat_download"></td>
+                    <td id="stat_upload"></td>
+                    <td id="stat_latency"></td>
+                    <td></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 
