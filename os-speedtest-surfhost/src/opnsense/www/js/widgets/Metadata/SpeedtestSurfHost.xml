@@ -8,9 +8,9 @@
         <translations>
             <title>Speedtest</title>
             <most_recent>Most recent</most_recent>
-            <avg_latency>Avg. latency</avg_latency>
-            <avg_download>Avg. download</avg_download>
-            <avg_upload>Avg. upload</avg_upload>
+            <avg_latency>Average latency</avg_latency>
+            <avg_download>Average download</avg_download>
+            <avg_upload>Average upload</avg_upload>
             <down>Down</down>
             <up>up</up>
             <latency>latency</latency>

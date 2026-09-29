@@ -7,10 +7,9 @@
 # Install the Ookla speedtest binary; prints one line of JSON.
 #
 #   install_backend.sh install  fetch the binary when it is missing (run by
-#                               the package's post-install step)
-#   install_backend.sh sync     the same, and remove speedtest-cli, which
-#                               1.1 could install (run on every Save)
-#   install_backend.sh remove   remove the binary (and speedtest-cli)
+#                               the package's post-install step and on
+#                               every Save of the settings)
+#   install_backend.sh remove   remove the binary
 #
 # Installing only downloads the binary. It does not run a test, so it does
 # not accept Ookla's terms on anyone's behalf; the test script refuses to
@@ -42,12 +41,6 @@ reply() {
 clean() {
 	# last line of a command's output, safe inside a JSON string
 	tail -n 1 | tr -d '"\\' | tr -c '[:print:]' ' '
-}
-
-cli_pkg() {
-	PYVER=$(/usr/local/bin/python3 -c 'import sys; print("%d%d" % sys.version_info[:2])' 2>/dev/null)
-	[ -n "${PYVER}" ] || return 1
-	echo "py${PYVER}-speedtest-cli"
 }
 
 install_ookla() {
@@ -82,30 +75,16 @@ remove_ookla() {
 	return 0
 }
 
-remove_cli() {
-	PKG=$(cli_pkg) || reply error "Could not determine the Python version"
-	pkg info -e "${PKG}" || return 0
-	if ! OUT=$(pkg delete -y "${PKG}" 2>&1); then
-		reply error "pkg delete ${PKG} failed: $(echo "${OUT}" | clean)"
-	fi
-}
-
 case "$1" in
 install)
 	install_ookla
-	reply ok "Ookla speedtest installed"
-	;;
-sync)
-	install_ookla
-	remove_cli
 	reply ok "Ookla speedtest ready"
 	;;
 remove)
 	remove_ookla
-	remove_cli
 	reply ok "Ookla speedtest removed"
 	;;
 *)
-	reply error "usage: install_backend.sh install|sync|remove"
+	reply error "usage: install_backend.sh install|remove"
 	;;
 esac

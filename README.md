@@ -46,7 +46,7 @@ The Ookla binary is downloaded during the install. If that download failed (no i
 2. Optionally set a default **Server id**, the **Interface** to test from, and how long to **keep history**.
 3. **Save**.
 
-Upgrading from 1.1 with speedtest-cli selected: the first **Save** after the update removes the speedtest-cli package. Results speedtest-cli stored stay in the history; **Clear history** removes them.
+Coming from 1.1 with speedtest-cli selected: 1.2 removed that package on the first Save; from 1.2.1 on it is left alone, so remove it by hand if it is still there (`pkg delete py313-speedtest-cli`). Results speedtest-cli stored stay in the history; **Clear history** removes them.
 
 ### 4. Schedule (optional)
 

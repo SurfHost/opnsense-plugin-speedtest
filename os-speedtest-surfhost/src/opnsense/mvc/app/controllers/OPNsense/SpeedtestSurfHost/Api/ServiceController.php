@@ -107,9 +107,8 @@ class ServiceController extends ApiControllerBase
 
     /**
      * After Save: render the settings for the scripts, regenerate the
-     * crontab, and install the chosen test program (removing the other one).
-     * The Ookla binary is only fetched when its terms were accepted; the
-     * install script checks that again in the rendered settings.
+     * crontab, and install the Ookla binary if it is missing (the package
+     * installs it too; this covers a download that failed back then).
      * @return array
      */
     public function reconfigureAction()
@@ -120,6 +119,6 @@ class ServiceController extends ApiControllerBase
         $backend = new Backend();
         $backend->configdRun('template reload OPNsense/SpeedtestSurfHost');
         $backend->configdRun('cron restart');
-        return $this->configd('speedtestsurfhost sync');
+        return $this->configd('speedtestsurfhost install');
     }
 }

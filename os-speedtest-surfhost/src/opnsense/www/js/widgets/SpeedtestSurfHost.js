@@ -39,12 +39,6 @@ export default class SpeedtestSurfHost extends BaseTableWidget {
         return $container;
     }
 
-    minmax(v, unit) {
-        return $('<span/>')
-            .append($('<strong/>').text(`${v.avg} ${unit}`))
-            .append(document.createTextNode(` (min ${v.min}, max ${v.max})`));
-    }
-
     async onWidgetTick() {
         const stat = await this.ajaxCall('/api/speedtestsurfhost/service/stat');
         const recent = await this.ajaxCall('/api/speedtestsurfhost/service/recent');
@@ -64,10 +58,12 @@ export default class SpeedtestSurfHost extends BaseTableWidget {
         }
         $('#speedtestsurfhost_recent').empty().append($recent);
 
+        // averages over every stored test, the same as the row under the
+        // history on the Speedtest page
         if (stat && !stat.error && stat.samples > 0) {
-            $('#speedtestsurfhost_latency').empty().append(this.minmax(stat.latency, 'ms'));
-            $('#speedtestsurfhost_download').empty().append(this.minmax(stat.download, 'Mbps'));
-            $('#speedtestsurfhost_upload').empty().append(this.minmax(stat.upload, 'Mbps'));
+            $('#speedtestsurfhost_download').text(`${stat.download.avg} Mbps`);
+            $('#speedtestsurfhost_upload').text(`${stat.upload.avg} Mbps`);
+            $('#speedtestsurfhost_latency').text(`${stat.latency.avg} ms`);
         }
     }
 
