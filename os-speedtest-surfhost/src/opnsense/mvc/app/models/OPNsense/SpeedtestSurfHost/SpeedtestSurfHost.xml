@@ -1,0 +1,71 @@
+<model>
+    <mount>//OPNsense/SpeedtestSurfHost</mount>
+    <version>1.0.0</version>
+    <description>Speedtest (SurfHost)</description>
+    <items>
+        <general>
+            <backend type="OptionField">
+                <Default>cli</Default>
+                <Required>Y</Required>
+                <OptionValues>
+                    <cli>speedtest-cli (Python, from the OPNsense repository)</cli>
+                    <ookla>Ookla speedtest (binary, downloaded from Ookla)</ookla>
+                </OptionValues>
+            </backend>
+            <acceptOoklaTerms type="BooleanField">
+                <Default>0</Default>
+                <Required>Y</Required>
+            </acceptOoklaTerms>
+            <serverId type="IntegerField">
+                <MinimumValue>1</MinimumValue>
+                <MaximumValue>999999999</MaximumValue>
+                <ValidationMessage>The server id must be a positive number.</ValidationMessage>
+                <Required>N</Required>
+            </serverId>
+            <interface type="InterfaceField">
+                <Required>N</Required>
+                <BlankDesc>Default route</BlankDesc>
+            </interface>
+            <retentionDays type="IntegerField">
+                <Default>365</Default>
+                <MinimumValue>0</MinimumValue>
+                <MaximumValue>3650</MaximumValue>
+                <ValidationMessage>Retention must be between 0 (keep everything) and 3650 days.</ValidationMessage>
+                <Required>Y</Required>
+            </retentionDays>
+        </general>
+        <schedule>
+            <enabled type="BooleanField">
+                <Default>0</Default>
+                <Required>Y</Required>
+            </enabled>
+            <interval type="OptionField">
+                <Default>h4</Default>
+                <Required>Y</Required>
+                <OptionValues>
+                    <h1>Every hour</h1>
+                    <h2>Every 2 hours</h2>
+                    <h3>Every 3 hours</h3>
+                    <h4>Every 4 hours</h4>
+                    <h6>Every 6 hours</h6>
+                    <h12>Every 12 hours</h12>
+                    <h24>Once a day</h24>
+                </OptionValues>
+            </interval>
+            <minute type="IntegerField">
+                <Default>17</Default>
+                <MinimumValue>0</MinimumValue>
+                <MaximumValue>59</MaximumValue>
+                <ValidationMessage>Minute must be between 0 and 59.</ValidationMessage>
+                <Required>Y</Required>
+            </minute>
+            <hour type="IntegerField">
+                <Default>3</Default>
+                <MinimumValue>0</MinimumValue>
+                <MaximumValue>23</MaximumValue>
+                <ValidationMessage>Hour must be between 0 and 23.</ValidationMessage>
+                <Required>Y</Required>
+            </hour>
+        </schedule>
+    </items>
+</model>

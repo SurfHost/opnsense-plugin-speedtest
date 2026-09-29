@@ -1,0 +1,9 @@
+<acl>
+    <page-reporting-speedtestsurfhost>
+        <name>Reporting: Speedtest (SurfHost)</name>
+        <patterns>
+            <pattern>ui/speedtestsurfhost/*</pattern>
+            <pattern>api/speedtestsurfhost/*</pattern>
+        </patterns>
+    </page-reporting-speedtestsurfhost>
+</acl>

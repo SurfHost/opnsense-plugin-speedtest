@@ -1,0 +1,60 @@
+<form>
+    <field>
+        <id>speedtestsurfhost.general.backend</id>
+        <label>Test program</label>
+        <type>dropdown</type>
+        <help>speedtest-cli comes from the OPNsense package repository. The Ookla binary is downloaded from install.speedtest.net and checked against a SHA-256 pinned in this plugin; it is usually more accurate on fast links. Click "Install" below after saving to fetch the chosen program.</help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.general.acceptOoklaTerms</id>
+        <label>Accept Ookla terms</label>
+        <type>checkbox</type>
+        <help><![CDATA[Required for the Ookla binary. I accept the <a href="https://www.speedtest.net/about/eula" target="_blank" rel="noopener">Ookla end user license agreement</a> and <a href="https://www.speedtest.net/about/privacy" target="_blank" rel="noopener">privacy policy</a>, including that test results are shared with Ookla.]]></help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.general.serverId</id>
+        <label>Server id</label>
+        <type>text</type>
+        <help>Server used by scheduled tests and by "Run speedtest" when no other server is picked. Leave empty to let the program pick the nearest server.</help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.general.interface</id>
+        <label>Interface</label>
+        <type>dropdown</type>
+        <help>Run the test from this interface, for multi-WAN setups. Leave on "Default route" to follow the routing table. The Ookla binary binds to the device, speedtest-cli to the interface's first IPv4 address.</help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.general.retentionDays</id>
+        <label>Keep history (days)</label>
+        <type>text</type>
+        <help>Results older than this are removed after each test. 0 keeps everything.</help>
+    </field>
+    <field>
+        <type>header</type>
+        <label>Schedule</label>
+    </field>
+    <field>
+        <id>speedtestsurfhost.schedule.enabled</id>
+        <label>Run on a schedule</label>
+        <type>checkbox</type>
+        <help>Adds a system cron job; no entry under System: Settings: Cron is needed.</help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.schedule.interval</id>
+        <label>Interval</label>
+        <type>dropdown</type>
+        <help>Every N hours counts from midnight, so every 6 hours runs at 00, 06, 12 and 18.</help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.schedule.minute</id>
+        <label>Minute</label>
+        <type>text</type>
+        <help>Minute past the hour. Pick something other than :00 so tests do not collide with other hourly jobs.</help>
+    </field>
+    <field>
+        <id>speedtestsurfhost.schedule.hour</id>
+        <label>Hour (once a day)</label>
+        <type>text</type>
+        <help>Only used with "Once a day".</help>
+    </field>
+</form>

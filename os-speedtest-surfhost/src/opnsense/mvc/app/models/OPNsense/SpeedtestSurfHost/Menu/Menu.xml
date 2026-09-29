@@ -1,0 +1,5 @@
+<menu>
+    <Reporting>
+        <SpeedtestSurfHost VisibleName="Speedtest" cssClass="fa fa-tachometer" url="/ui/speedtestsurfhost/"/>
+    </Reporting>
+</menu>

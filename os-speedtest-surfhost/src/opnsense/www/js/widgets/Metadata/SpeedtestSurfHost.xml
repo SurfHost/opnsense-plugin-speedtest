@@ -1,0 +1,19 @@
+<metadata>
+    <speedtestsurfhost>
+        <filename>SpeedtestSurfHost.js</filename>
+        <endpoints>
+            <endpoint>/api/speedtestsurfhost/service/recent</endpoint>
+            <endpoint>/api/speedtestsurfhost/service/stat</endpoint>
+        </endpoints>
+        <translations>
+            <title>Speedtest</title>
+            <most_recent>Most recent</most_recent>
+            <avg_latency>Avg. latency</avg_latency>
+            <avg_download>Avg. download</avg_download>
+            <avg_upload>Avg. upload</avg_upload>
+            <down>Down</down>
+            <up>up</up>
+            <latency>latency</latency>
+        </translations>
+    </speedtestsurfhost>
+</metadata>
