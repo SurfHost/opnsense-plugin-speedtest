@@ -78,8 +78,6 @@
                 $('#program_state').text(v && v.error ? v.error : '');
                 return;
             }
-            let name = v.backend === 'ookla' ? 'Ookla speedtest' : 'speedtest-cli';
-            $('#program_name').text(name);
             $('#program_state').text(v.message);
             $('#program_state').toggleClass('text-danger', !v.ready);
             $('.canruntests').toggle(v.ready);
@@ -207,7 +205,7 @@
                     <td style="width:22%">{{ lang._('Test program') }}</td>
                     <td>
                         <span id="checking">{{ lang._('Checking...') }}</span>
-                        <b id="program_name"></b> <span id="program_state"></span>
+                        <span id="program_state"></span>
                     </td>
                 </tr>
                 <tr class="canruntests" style="display:none">

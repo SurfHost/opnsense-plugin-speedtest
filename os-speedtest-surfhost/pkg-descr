@@ -1,12 +1,12 @@
 Internet speed test for OPNsense, a hardened fork of the
 os-speedtest-community plugin by Miha Kralj.
 
-Runs Ookla speedtest or speedtest-cli from the firewall, on a
+Runs the Ookla speedtest binary from the firewall, on a
 schedule or on demand, from a chosen interface on multi-WAN
 setups. Keeps a history with retention under /var/db, shows
 averages and the latest result on the dashboard, and exports
-the history as CSV. The Ookla binary is downloaded from Ookla
-only after its terms are accepted and is checked against a
-pinned SHA-256 before use.
+the history as CSV. The binary is downloaded from Ookla at
+install and checked against a pinned SHA-256; tests run only
+after Ookla's terms are accepted in the settings.
 
 WWW: https://github.com/SurfHost/opnsense-plugin-speedtest

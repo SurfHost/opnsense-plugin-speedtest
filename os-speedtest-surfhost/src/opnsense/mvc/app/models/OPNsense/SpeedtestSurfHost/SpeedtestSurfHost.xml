@@ -4,14 +4,6 @@
     <description>Speedtest (SurfHost)</description>
     <items>
         <general>
-            <backend type="OptionField">
-                <Default>cli</Default>
-                <Required>Y</Required>
-                <OptionValues>
-                    <cli>speedtest-cli (Python, from the OPNsense repository)</cli>
-                    <ookla>Ookla speedtest (binary, downloaded from Ookla)</ookla>
-                </OptionValues>
-            </backend>
             <acceptOoklaTerms type="BooleanField">
                 <Default>0</Default>
                 <Required>Y</Required>

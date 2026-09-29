@@ -8,7 +8,6 @@
 namespace OPNsense\SpeedtestSurfHost;
 
 use OPNsense\Base\BaseModel;
-use OPNsense\Base\Messages\Message;
 
 class SpeedtestSurfHost extends BaseModel
 {
@@ -30,24 +29,5 @@ class SpeedtestSurfHost extends BaseModel
             return [$minute, (string)(int)(string)$this->schedule->hour];
         }
         return [$minute, $every <= 1 ? '*' : '*/' . $every];
-    }
-
-    public function performValidation($validateFullModel = false)
-    {
-        $messages = parent::performValidation($validateFullModel);
-
-        // the Ookla binary may only be fetched and run after its EULA and
-        // privacy policy were accepted by a person, never silently
-        if (
-            (string)$this->general->backend === 'ookla' &&
-            (string)$this->general->acceptOoklaTerms !== '1'
-        ) {
-            $messages->appendMessage(new Message(
-                gettext('Accept the Ookla terms and privacy policy, or choose speedtest-cli.'),
-                'general.acceptOoklaTerms'
-            ));
-        }
-
-        return $messages;
     }
 }

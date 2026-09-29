@@ -1,0 +1,8 @@
+# Copyright (c) 2026 SurfHost.nl
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Have the Ookla binary ready right after install. This only downloads it
+# (fixed URL, pinned SHA-256); tests run once the terms are accepted on the
+# Settings tab. A failed download is not fatal: Save on that tab retries it.
+echo "Installing the Ookla speedtest binary"
+/bin/sh /usr/local/opnsense/scripts/OPNsense/SpeedtestSurfHost/install_backend.sh install || :

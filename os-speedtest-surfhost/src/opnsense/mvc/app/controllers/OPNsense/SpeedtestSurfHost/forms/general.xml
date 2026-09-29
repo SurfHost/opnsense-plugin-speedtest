@@ -1,15 +1,9 @@
 <form>
     <field>
-        <id>speedtestsurfhost.general.backend</id>
-        <label>Test program</label>
-        <type>dropdown</type>
-        <help>Save installs the chosen program and removes the other one. speedtest-cli comes from the OPNsense package repository. The Ookla binary is downloaded from install.speedtest.net and checked against a SHA-256 pinned in this plugin; it is usually more accurate on fast links.</help>
-    </field>
-    <field>
         <id>speedtestsurfhost.general.acceptOoklaTerms</id>
         <label>Accept Ookla terms</label>
         <type>checkbox</type>
-        <help><![CDATA[Required for the Ookla binary. I accept the <a href="https://www.speedtest.net/about/eula" target="_blank" rel="noopener">Ookla end user license agreement</a> and <a href="https://www.speedtest.net/about/privacy" target="_blank" rel="noopener">privacy policy</a>, including that test results are shared with Ookla.]]></help>
+        <help><![CDATA[Required before tests can run. Tests use the Ookla speedtest binary, installed with the plugin from install.speedtest.net and checked against a SHA-256 pinned in this plugin. I accept the <a href="https://www.speedtest.net/about/eula" target="_blank" rel="noopener">Ookla end user license agreement</a> and <a href="https://www.speedtest.net/about/privacy" target="_blank" rel="noopener">privacy policy</a>, including that test results are shared with Ookla.]]></help>
     </field>
     <field>
         <id>speedtestsurfhost.general.serverId</id>
@@ -21,7 +15,7 @@
         <id>speedtestsurfhost.general.interface</id>
         <label>Interface</label>
         <type>dropdown</type>
-        <help>Run the test from this interface, for multi-WAN setups. Leave on "Default route" to follow the routing table. The Ookla binary binds to the device, speedtest-cli to the interface's first IPv4 address.</help>
+        <help>Run the test from this interface, for multi-WAN setups. Leave on "Default route" to follow the routing table.</help>
     </field>
     <field>
         <id>speedtestsurfhost.general.retentionDays</id>

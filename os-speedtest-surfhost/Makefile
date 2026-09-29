@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 PLUGIN_NAME=		speedtest-surfhost
-PLUGIN_VERSION=		1.1.1
+PLUGIN_VERSION=		1.2
 PLUGIN_COMMENT=		Internet speed test with history, schedule and dashboard widget
 PLUGIN_LICENSE=		BSD2CLAUSE
 PLUGIN_MAINTAINER=	hans@surfhost.nl

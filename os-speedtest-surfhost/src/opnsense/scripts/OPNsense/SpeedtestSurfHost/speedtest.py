@@ -25,10 +25,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
 
-Speedtest wrapper for configd and cron. Every command prints exactly one JSON
+Wrapper around the Ookla speedtest binary for configd and cron. Every command prints exactly one JSON
 document and exits 0, so configd never hands the page a traceback.
 
-  speedtest.py version            program in use and what is installed
+  speedtest.py version            whether the Ookla binary is ready
   speedtest.py list               nearest servers
   speedtest.py run [id|default]   run a test and store it
   speedtest.py stat               averages, minimum and maximum
@@ -56,7 +56,6 @@ DATA_DIR = '/var/db/speedtest-surfhost'
 CSV_FILE = DATA_DIR + '/results.csv'
 LOCK_FILE = DATA_DIR + '/run.lock'
 OOKLA_BIN = '/usr/local/libexec/speedtest-surfhost/speedtest'
-CLI_BIN = '/usr/local/bin/speedtest-cli'
 
 # same columns and order as os-speedtest-community, so exported files stay
 # interchangeable
@@ -74,7 +73,6 @@ class SpeedtestError(Exception):
 
 def load_settings(path=CONF_FILE):
     settings = {
-        'backend': 'cli',
         'accept_ookla_terms': '0',
         'server_id': '',
         'device': '',
@@ -178,30 +176,13 @@ def present(r):
     return out
 
 
-def ipv4_of(device):
-    """First IPv4 address on a device, for speedtest-cli's --source."""
-    try:
-        text = subprocess.run(['/sbin/ifconfig', device], capture_output=True, text=True,
-                              timeout=10, check=True).stdout
-    except (OSError, subprocess.SubprocessError):
-        raise SpeedtestError('Interface %s is not available' % device)
-    match = re.search(r'^\s*inet (\d+\.\d+\.\d+\.\d+)', text, re.MULTILINE)
-    if not match:
-        raise SpeedtestError('Interface %s has no IPv4 address' % device)
-    return match.group(1)
-
-
 def program(settings):
-    """(kind, path) of the configured program, or a SpeedtestError explaining why not."""
-    if settings['backend'] == 'ookla':
-        if settings['accept_ookla_terms'] != '1':
-            raise SpeedtestError('The Ookla terms have not been accepted in the settings')
-        if not os.access(OOKLA_BIN, os.X_OK):
-            raise SpeedtestError('Not installed yet: click Save on the Settings tab')
-        return 'ookla', OOKLA_BIN
-    if not os.access(CLI_BIN, os.X_OK):
-        raise SpeedtestError('Not installed yet: click Save on the Settings tab')
-    return 'cli', CLI_BIN
+    """Path of the Ookla binary, or a SpeedtestError explaining why it cannot run."""
+    if not os.access(OOKLA_BIN, os.X_OK):
+        raise SpeedtestError('The Ookla binary is missing: click Save on the Settings tab to install it')
+    if settings['accept_ookla_terms'] != '1':
+        raise SpeedtestError('Accept the Ookla terms on the Settings tab first')
+    return OOKLA_BIN
 
 
 def run_program(cmd, timeout):
@@ -232,106 +213,61 @@ def run_program(cmd, timeout):
 
 
 def cmd_version(settings):
-    ookla = os.access(OOKLA_BIN, os.X_OK)
-    cli = os.access(CLI_BIN, os.X_OK)
     out = {
-        'backend': settings['backend'],
         'terms_accepted': settings['accept_ookla_terms'] == '1',
-        'ookla_installed': ookla,
-        'cli_installed': cli,
+        'installed': os.access(OOKLA_BIN, os.X_OK),
         'ready': False,
         'message': '',
     }
     try:
-        kind, path = program(settings)
+        path = program(settings)
         text = run_program([path, '--version'], 30)
         lines = [line.strip() for line in text.splitlines() if line.strip()]
-        out['message'] = lines[0] if kind == 'ookla' else ' / '.join(lines[:2])
+        out['message'] = lines[0] if lines else ''
         out['ready'] = True
     except SpeedtestError as e:
         out['message'] = str(e)
     return out
 
 
-def parse_cli_list(text, limit=20):
-    """speedtest-cli --list: '12345) Sponsor (City, Country) [12.34 km]'."""
+def cmd_list(settings):
+    path = program(settings)
+    text = run_program([path, '--accept-license', '--accept-gdpr', '--servers', '-f', 'jsonl'], LIST_TIMEOUT)
     servers = []
     for line in text.splitlines():
-        match = re.match(r'^\s*(\d+)\)\s+(.*?)\s+\((.*)\)\s+\[([\d.]+) km\]\s*$', line)
-        if not match:
+        try:
+            s = json.loads(line)
+        except ValueError:
             continue
-        place = match.group(3)
-        location, _, country = place.rpartition(', ')
-        servers.append({
-            'id': match.group(1),
-            'name': match.group(2),
-            'location': location or place,
-            'country': country if location else '',
-            'distance': match.group(4),
-        })
-        if len(servers) >= limit:
-            break
+        servers.append({'id': str(s.get('id', '')), 'name': s.get('name', ''),
+                        'location': s.get('location', ''), 'country': s.get('country', '')})
     return servers
 
 
-def cmd_list(settings):
-    kind, path = program(settings)
-    if kind == 'ookla':
-        text = run_program([path, '--accept-license', '--accept-gdpr', '--servers', '-f', 'jsonl'], LIST_TIMEOUT)
-        servers = []
-        for line in text.splitlines():
-            try:
-                s = json.loads(line)
-            except ValueError:
-                continue
-            servers.append({'id': str(s.get('id', '')), 'name': s.get('name', ''),
-                            'location': s.get('location', ''), 'country': s.get('country', '')})
-        return servers
-    return parse_cli_list(run_program([path, '--secure', '--list'], LIST_TIMEOUT))
-
-
-def build_command(kind, path, server_id, device):
-    if kind == 'ookla':
-        cmd = [path, '--accept-license', '--accept-gdpr', '-f', 'json', '-p', 'no']
-        if server_id:
-            cmd += ['-s', server_id]
-        if device:
-            cmd += ['-I', device]
-    else:
-        cmd = [path, '--json', '--share', '--secure']
-        if server_id:
-            cmd += ['--server', server_id]
-        if device:
-            cmd += ['--source', ipv4_of(device)]
+def build_command(path, server_id, device):
+    # the terms were accepted by a person on the Settings tab (program()
+    # refuses otherwise); these flags only stop the binary asking again
+    cmd = [path, '--accept-license', '--accept-gdpr', '-f', 'json', '-p', 'no']
+    if server_id:
+        cmd += ['-s', server_id]
+    if device:
+        cmd += ['-I', device]
     return cmd
 
 
-def parse_result(kind, result):
-    """One result dict in the stored units: Mbit/s and milliseconds."""
-    if kind == 'ookla':
-        return {
-            'timestamp': utc_epoch(result['timestamp']),
-            'clientip': result['interface']['externalIp'],
-            'serverid': str(result['server']['id']),
-            'servername': result['server']['name'] + ', ' + result['server']['location'],
-            'country': result['server']['country'],
-            'download': round(result['download']['bandwidth'] / 125000, 2),
-            'upload': round(result['upload']['bandwidth'] / 125000, 2),
-            'latency': round(result['ping']['latency'], 2),
-            'link': result.get('result', {}).get('url', ''),
-        }
-    share = result.get('share') or ''
+def parse_result(result):
+    """One Ookla result in the stored units: Mbit/s and milliseconds."""
     return {
         'timestamp': utc_epoch(result['timestamp']),
-        'clientip': result['client']['ip'],
+        'clientip': result['interface']['externalIp'],
         'serverid': str(result['server']['id']),
-        'servername': result['server']['sponsor'] + ', ' + result['server']['name'],
+        'servername': result['server']['name'] + ', ' + result['server']['location'],
         'country': result['server']['country'],
-        'download': round(result['download'] / 1000000, 2),
-        'upload': round(result['upload'] / 1000000, 2),
-        'latency': round(result['ping'], 2),
-        # the share link points at a .png; the result page is the same URL without it
-        'link': share[:-4] if share.endswith('.png') else share,
+        # bandwidth is in bytes per second
+        'download': round(result['download']['bandwidth'] / 125000, 2),
+        'upload': round(result['upload']['bandwidth'] / 125000, 2),
+        'latency': round(result['ping']['latency'], 2),
+        'link': result.get('result', {}).get('url', ''),
     }
 
 
@@ -342,8 +278,7 @@ def cmd_run(settings, arg):
         server_id = arg
     else:
         raise SpeedtestError('%s is not a valid server id' % arg)
-    kind, path = program(settings)
-    cmd = build_command(kind, path, server_id, settings['device'])
+    cmd = build_command(program(settings), server_id, settings['device'])
 
     os.makedirs(DATA_DIR, mode=0o755, exist_ok=True)
     with open(LOCK_FILE, 'w') as lock:
@@ -357,7 +292,7 @@ def cmd_run(settings, arg):
         except ValueError:
             raise SpeedtestError('The test program returned no usable result')
         try:
-            row = parse_result(kind, result)
+            row = parse_result(result)
         except (KeyError, TypeError, ValueError) as e:
             raise SpeedtestError('Unexpected test result (%s)' % e)
         rows = read_rows()

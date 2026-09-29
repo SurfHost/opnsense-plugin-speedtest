@@ -1,6 +1,6 @@
 # Speedtest for OPNsense (SurfHost)
 
-`os-speedtest-surfhost` runs internet speed tests from the firewall itself, on demand or on a schedule, keeps the history and shows the latest result and averages on the dashboard.
+`os-speedtest-surfhost` tests your ISP speed straight from the firewall with the Ookla speedtest binary, on demand or on a schedule, keeps the history and shows the latest result and averages on the dashboard.
 
 It is a hardened fork of [os-speedtest-community](https://github.com/mimugmail/opn-repo/tree/main/net-mgmt/speedtest-community) by Miha Kralj (BSD 2-Clause), and is published in the [SurfHost plugin repository](https://github.com/SurfHost/opnsense-repo) together with the other SurfHost plugins.
 
@@ -8,8 +8,9 @@ It is a hardened fork of [os-speedtest-community](https://github.com/mimugmail/o
 
 | | os-speedtest-community | os-speedtest-surfhost |
 |---|---|---|
+| Test program | Choice of speedtest-cli or Ookla, installed by hand | Ookla only, installed with the plugin |
 | Ookla binary | URL scraped from speedtest.net at install time, `pkg add -f` as root, no check | Fixed URL, SHA-256 pinned in the plugin, only the binary is extracted; nothing foreign enters the package database |
-| Ookla terms | Accepted silently on every run | Explicit checkbox; the Ookla program refuses to install or run without it |
+| Ookla terms | Accepted silently on every run | Explicit checkbox; no test runs until it is ticked |
 | History | CSV inside the scripts directory | `/var/db/speedtest-surfhost/results.csv`, atomic writes, retention in days |
 | Scheduling | Add a job under System > Settings > Cron yourself | Built-in schedule on the settings tab |
 | Multi-WAN | Always the default route | Choose the interface to test from |
@@ -35,14 +36,17 @@ If the firewall already has `surfhost.conf` from the Entra SSO plugin, run the s
 
 **System > Firmware > Plugins**, click **Click to view the community plugins**, install `os-speedtest-surfhost`. Use this page rather than `pkg install`, so OPNsense keeps the plugin registered.
 
-### 3. Pick the test program
+The Ookla binary is downloaded during the install. If that download failed (no internet at that moment), **Save** on the Settings tab retries it.
+
+### 3. Accept the Ookla terms
 
 **Reporting > Speedtest**, tab **Settings**:
 
-1. **Test program**: `speedtest-cli` (from the OPNsense package repository) or **Ookla speedtest** (usually more accurate above a few hundred Mbit/s).
-2. For Ookla, tick **Accept Ookla terms** after reading the linked licence and privacy policy. Test results are shared with Ookla either way; speedtest-cli uses the same speedtest.net servers.
-3. Optionally set a default **Server id**, the **Interface** to test from, and how long to **keep history**.
-4. **Save**. This installs the chosen program (and removes the other one if it was installed); the first time takes a few seconds. The result shows next to the Save button.
+1. Tick **Accept Ookla terms** after reading the linked licence and privacy policy. Test results are shared with Ookla.
+2. Optionally set a default **Server id**, the **Interface** to test from, and how long to **keep history**.
+3. **Save**.
+
+Upgrading from 1.1 with speedtest-cli selected: the first **Save** after the update removes the speedtest-cli package. Results speedtest-cli stored stay in the history; **Clear history** removes them.
 
 ### 4. Schedule (optional)
 
@@ -62,7 +66,7 @@ The old history is not carried over; this plugin starts with an empty one.
 
 ## Remove
 
-1. Remove the test program first (the Ookla binary or the speedtest-cli package), in a root shell:
+1. Remove the Ookla binary first, in a root shell:
    `sh /usr/local/opnsense/scripts/OPNsense/SpeedtestSurfHost/install_backend.sh remove`
 2. Remove the plugin on **System > Firmware > Plugins**.
 3. The history is kept in `/var/db/speedtest-surfhost`; `rm -rf /var/db/speedtest-surfhost` removes it.
