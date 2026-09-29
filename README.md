@@ -30,8 +30,6 @@ fetch -o /usr/local/etc/pkg/repos/surfhost.conf https://surfhost.github.io/opnse
 pkg update
 ```
 
-If the firewall already has `surfhost.conf` from the Entra SSO plugin, run the same command: it overwrites the old file with the new address.
-
 ### 2. Install the plugin
 
 **System > Firmware > Plugins**, click **Click to view the community plugins**, install `os-speedtest-surfhost`. Use this page rather than `pkg install`, so OPNsense keeps the plugin registered.
