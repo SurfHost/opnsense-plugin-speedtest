@@ -26,7 +26,7 @@ To move to a newer build:
 1. Download it and check that the package holds `/usr/local/bin/speedtest`:
    `fetch <url> && sha256 <file> && tar -tvf <file>`
 2. On a test firewall, extract the binary and run `speedtest --version` and a full test.
-3. Update `OOKLA_URL` and `OOKLA_SHA256` in `src/opnsense/scripts/OPNsense/SpeedtestSurfHost/install_backend.sh`, bump the plugin version, release. Existing installs keep the old binary until someone clicks Install again.
+3. Update `OOKLA_URL` and `OOKLA_SHA256` in `src/opnsense/scripts/OPNsense/SpeedtestSurfHost/install_backend.sh`, bump the plugin version, release. Existing installs keep the old binary; switching the test program to speedtest-cli and back (Save each time) fetches the new one.
 
 ## Why no PLUGIN_CONFLICTS
 

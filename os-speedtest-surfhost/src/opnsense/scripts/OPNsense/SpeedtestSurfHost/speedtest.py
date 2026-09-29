@@ -35,7 +35,6 @@ document and exits 0, so configd never hands the page a traceback.
   speedtest.py log                latest 50 results, newest first
   speedtest.py recent             the most recent result
   speedtest.py clear              delete the history
-  speedtest.py import             merge the os-speedtest-community history
 """
 import calendar
 import configparser
@@ -58,10 +57,9 @@ CSV_FILE = DATA_DIR + '/results.csv'
 LOCK_FILE = DATA_DIR + '/run.lock'
 OOKLA_BIN = '/usr/local/libexec/speedtest-surfhost/speedtest'
 CLI_BIN = '/usr/local/bin/speedtest-cli'
-COMMUNITY_CSV = '/usr/local/opnsense/scripts/OPNsense/speedtest/speedtest.csv'
 
-# same columns and order as os-speedtest-community, so its history imports
-# as is and exported files stay interchangeable
+# same columns and order as os-speedtest-community, so exported files stay
+# interchangeable
 FIELDS = ['Timestamp', 'ClientIp', 'ServerId', 'ServerName', 'Country', 'DlSpeed', 'UlSpeed', 'Latency', 'Link']
 
 # configd gives up on a script after 120 seconds; stop the test before that
@@ -199,10 +197,10 @@ def program(settings):
         if settings['accept_ookla_terms'] != '1':
             raise SpeedtestError('The Ookla terms have not been accepted in the settings')
         if not os.access(OOKLA_BIN, os.X_OK):
-            raise SpeedtestError('The Ookla binary is not installed; use Install on the settings page')
+            raise SpeedtestError('Not installed yet: click Save on the Settings tab')
         return 'ookla', OOKLA_BIN
     if not os.access(CLI_BIN, os.X_OK):
-        raise SpeedtestError('speedtest-cli is not installed; use Install on the settings page')
+        raise SpeedtestError('Not installed yet: click Save on the Settings tab')
     return 'cli', CLI_BIN
 
 
@@ -404,34 +402,6 @@ def cmd_clear():
     return {'status': 'ok'}
 
 
-def community_epoch(value):
-    """
-    os-speedtest-community stored the UTC wall clock as if it were local time
-    (strptime().timestamp() on a UTC string), and showed it back with
-    fromtimestamp(), labelled GMT. Undo that to get the real moment.
-    """
-    return float(calendar.timegm(datetime.fromtimestamp(value).timetuple()))
-
-
-def cmd_import(source=COMMUNITY_CSV):
-    if not os.path.isfile(source):
-        return {'status': 'ok', 'imported': 0, 'message': 'No os-speedtest-community history found'}
-    rows = read_rows()
-    seen = {(round(r['timestamp']), r['serverid']) for r in rows}
-    added = 0
-    for r in read_rows(source):
-        r['timestamp'] = community_epoch(r['timestamp'])
-        key = (round(r['timestamp']), r['serverid'])
-        if key in seen:
-            continue
-        seen.add(key)
-        rows.append(r)
-        added += 1
-    if added:
-        write_rows(rows)
-    return {'status': 'ok', 'imported': added}
-
-
 def main(argv):
     command = argv[1] if len(argv) > 1 else ''
     arg = argv[2].strip() if len(argv) > 2 else ''
@@ -451,8 +421,6 @@ def main(argv):
             out = cmd_recent()
         elif command == 'clear':
             out = cmd_clear()
-        elif command == 'import':
-            out = cmd_import()
         else:
             out = {'error': 'Unknown command %r' % command}
     except SpeedtestError as e:

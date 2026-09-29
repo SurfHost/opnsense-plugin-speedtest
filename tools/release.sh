@@ -89,12 +89,6 @@ if echo "${FILES}" | grep -Eq '__pycache__|\.pyc|\.ruff_cache'; then
     echo '!!! stray cache files in the package (plist ships everything in the tree)' >&2
     exit 1
 fi
-if MANIFEST=$(pkg info -R -F "${PKG}"); then
-    echo "${MANIFEST}" | grep -q 'Importing the os-speedtest-community history' \
-        || { echo '!!! the post-install script lacks the history import (+POST_INSTALL.post)' >&2; exit 1; }
-else
-    echo '!!! could not read the manifest; check the post-install script by hand' >&2
-fi
 if [ -n "$(pkg query -F "${PKG}" '%dn')" ]; then
     echo '!!! the package has dependencies it should not have:' >&2
     pkg query -F "${PKG}" '%dn %dv' >&2

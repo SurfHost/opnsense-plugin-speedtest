@@ -73,10 +73,6 @@
         });
     }
 
-    // the program the saved settings use; Install and Remove act on that,
-    // not on an unsaved choice in the form
-    let savedBackend = 'cli';
-
     function versionReload() {
         ajaxGet('/api/speedtestsurfhost/service/version', {}, function (v) {
             $('#checking').hide();
@@ -84,15 +80,11 @@
                 $('#program_state').text(v && v.error ? v.error : '');
                 return;
             }
-            savedBackend = v.backend;
             let name = v.backend === 'ookla' ? 'Ookla speedtest' : 'speedtest-cli';
             $('#program_name').text(name);
             $('#program_state').text(v.message);
             $('#program_state').toggleClass('text-danger', !v.ready);
             $('.canruntests').toggle(v.ready);
-            let installed = v.backend === 'ookla' ? v.ookla_installed : v.cli_installed;
-            $('#installAct').toggle(!installed);
-            $('#removeAct').toggle(installed);
         });
     }
 
@@ -126,34 +118,20 @@
         statReload();
         logReload();
 
+        // Save also installs the chosen test program (and removes the other
+        // one), which can take a few seconds the first time
         $('#saveAct').click(function () {
             busy('saveAct', true);
+            $('#save_msg').text('').removeClass('text-danger');
             saveFormToEndpoint('/api/speedtestsurfhost/settings/set', 'frm_general_settings', function () {
-                ajaxCall('/api/speedtestsurfhost/service/reconfigure', {}, function () {
+                ajaxCall('/api/speedtestsurfhost/service/reconfigure', {}, function (r) {
                     busy('saveAct', false);
+                    let ok = r && r.status === 'ok';
+                    $('#save_msg').text(r ? (r.message || r.error || '') : '').toggleClass('text-danger', !ok);
                     versionReload();
                 });
             }, true, function () {
                 busy('saveAct', false);
-            });
-        });
-
-        $('#installAct').click(function () {
-            busy('installAct', true);
-            ajaxCall('/api/speedtestsurfhost/service/install', {'backend': savedBackend}, function (r) {
-                busy('installAct', false);
-                $('#install_msg').text(r && r.message ? r.message : (r && r.error ? r.error : ''))
-                    .toggleClass('text-danger', !r || r.status !== 'ok');
-                versionReload();
-            });
-        });
-
-        $('#removeAct').click(function () {
-            busy('removeAct', true);
-            ajaxCall('/api/speedtestsurfhost/service/install', {'backend': 'remove-' + savedBackend}, function (r) {
-                busy('removeAct', false);
-                $('#install_msg').text(r && r.message ? r.message : '').removeClass('text-danger');
-                versionReload();
             });
         });
 
@@ -215,17 +193,6 @@
                 }
             });
         });
-
-        $('#importAct').click(function () {
-            busy('importAct', true);
-            ajaxCall('/api/speedtestsurfhost/service/import', {}, function (r) {
-                busy('importAct', false);
-                $('#import_msg').text(r && r.error ? r.error
-                    : (r.message ? r.message : r.imported + ' {{ lang._("results imported") }}'));
-                statReload();
-                logReload();
-            });
-        });
     });
 </script>
 
@@ -243,11 +210,6 @@
                     <td>
                         <span id="checking">{{ lang._('Checking...') }}</span>
                         <b id="program_name"></b> <span id="program_state"></span>
-                        <button class="btn btn-xs btn-primary" id="installAct" type="button" style="display:none">
-                            <b>{{ lang._('Install') }}</b> <i id="installAct_progress"></i></button>
-                        <button class="btn btn-xs btn-default" id="removeAct" type="button" style="display:none">
-                            {{ lang._('Remove') }} <i id="removeAct_progress"></i></button>
-                        <div><small id="install_msg"></small></div>
                     </td>
                 </tr>
                 <tr class="canruntests" style="display:none">
@@ -315,13 +277,9 @@
                         <span class="pull-right">
                             <a class="btn btn-xs btn-default" href="/api/speedtestsurfhost/download/csv">
                                 <i class="fa fa-download"></i> {{ lang._('Export CSV') }}</a>
-                            <button class="btn btn-xs btn-default" id="importAct" type="button"
-                                    title="{{ lang._('Merge the history of os-speedtest-community') }}">
-                                {{ lang._('Import community history') }} <i id="importAct_progress"></i></button>
                             <button class="btn btn-xs btn-danger" id="deletelogAct" type="button">
                                 {{ lang._('Clear history') }}</button>
                         </span>
-                        <div><small id="import_msg"></small></div>
                     </th>
                 </tr>
                 <tr>
@@ -343,6 +301,7 @@
         <div class="col-md-12" style="padding-bottom:1em">
             <button class="btn btn-primary" id="saveAct" type="button">
                 <b>{{ lang._('Save') }}</b> <i id="saveAct_progress"></i></button>
+            <small id="save_msg" style="margin-left:1em"></small>
         </div>
     </div>
 </div>

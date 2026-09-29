@@ -106,48 +106,20 @@ class ServiceController extends ApiControllerBase
     }
 
     /**
-     * Copy the history of os-speedtest-community into this plugin's history.
-     * @return array
-     */
-    public function importAction()
-    {
-        if (!$this->request->isPost()) {
-            return ['error' => gettext('POST required')];
-        }
-        return $this->configd('speedtestsurfhost import');
-    }
-
-    /**
-     * Install or remove the selected test program. The Ookla binary is only
-     * fetched when its terms were accepted in the saved settings; the
-     * install script checks that again, from the rendered configuration.
-     * @return array
-     */
-    public function installAction()
-    {
-        if (!$this->request->isPost()) {
-            return ['error' => gettext('POST required')];
-        }
-        $backend = (string)$this->request->getPost('backend');
-        if (!in_array($backend, ['ookla', 'cli', 'remove-ookla', 'remove-cli'], true)) {
-            return ['error' => gettext('Unknown backend')];
-        }
-        return $this->configd('speedtestsurfhost install', [$backend]);
-    }
-
-    /**
-     * Render the settings for the test script and regenerate the crontab,
-     * after the settings were saved.
+     * After Save: render the settings for the scripts, regenerate the
+     * crontab, and install the chosen test program (removing the other one).
+     * The Ookla binary is only fetched when its terms were accepted; the
+     * install script checks that again in the rendered settings.
      * @return array
      */
     public function reconfigureAction()
     {
         if (!$this->request->isPost()) {
-            return ['status' => 'failed'];
+            return ['status' => 'error', 'message' => gettext('POST required')];
         }
         $backend = new Backend();
         $backend->configdRun('template reload OPNsense/SpeedtestSurfHost');
         $backend->configdRun('cron restart');
-        return ['status' => 'ok'];
+        return $this->configd('speedtestsurfhost sync');
     }
 }

@@ -3,7 +3,7 @@
         <id>speedtestsurfhost.general.backend</id>
         <label>Test program</label>
         <type>dropdown</type>
-        <help>speedtest-cli comes from the OPNsense package repository. The Ookla binary is downloaded from install.speedtest.net and checked against a SHA-256 pinned in this plugin; it is usually more accurate on fast links. Click "Install" below after saving to fetch the chosen program.</help>
+        <help>Save installs the chosen program and removes the other one. speedtest-cli comes from the OPNsense package repository. The Ookla binary is downloaded from install.speedtest.net and checked against a SHA-256 pinned in this plugin; it is usually more accurate on fast links.</help>
     </field>
     <field>
         <id>speedtestsurfhost.general.acceptOoklaTerms</id>

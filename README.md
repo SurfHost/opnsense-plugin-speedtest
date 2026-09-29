@@ -14,7 +14,7 @@ It is a hardened fork of [os-speedtest-community](https://github.com/mimugmail/o
 | Scheduling | Add a job under System > Settings > Cron yourself | Built-in schedule on the settings tab |
 | Multi-WAN | Always the default route | Choose the interface to test from |
 | Concurrent runs | A scheduled and a manual test can overlap | Lock, the second one gets a clear message |
-| Timestamps | UTC stored as local time, shown labelled GMT | Stored as real UTC, shown in local time; imported history is corrected |
+| Timestamps | UTC stored as local time, shown labelled GMT | Stored as real UTC, shown in local time |
 | Failures | Sometimes a traceback, scheduled failures invisible | Always a readable message; failed scheduled tests go to the system log |
 | Dashboard | Legacy and new widget | New (24.7+) widget only |
 
@@ -35,14 +35,14 @@ If the firewall already has `surfhost.conf` from the Entra SSO plugin, run the s
 
 **System > Firmware > Plugins**, click **Click to view the community plugins**, install `os-speedtest-surfhost`. Use this page rather than `pkg install`, so OPNsense keeps the plugin registered.
 
-### 3. Pick and install the test program
+### 3. Pick the test program
 
 **Reporting > Speedtest**, tab **Settings**:
 
 1. **Test program**: `speedtest-cli` (from the OPNsense package repository) or **Ookla speedtest** (usually more accurate above a few hundred Mbit/s).
 2. For Ookla, tick **Accept Ookla terms** after reading the linked licence and privacy policy. Test results are shared with Ookla either way; speedtest-cli uses the same speedtest.net servers.
 3. Optionally set a default **Server id**, the **Interface** to test from, and how long to **keep history**.
-4. **Save**, then on the **Speedtest** tab click **Install**.
+4. **Save**. This installs the chosen program (and removes the other one if it was installed); the first time takes a few seconds. The result shows next to the Save button.
 
 ### 4. Schedule (optional)
 
@@ -54,15 +54,16 @@ On the **Settings** tab tick **Run on a schedule**, pick the interval and the mi
 
 ## Switching from os-speedtest-community
 
-Both plugins have their own menu entry and files, so they can be installed at the same time while you switch.
+The old history is not carried over; this plugin starts with an empty one.
 
-1. Install `os-speedtest-surfhost` as above. Its post-install step imports the old history once (`/usr/local/opnsense/scripts/OPNsense/speedtest/speedtest.csv`), correcting the timestamps. **Import community history** on the Speedtest tab does the same again later and skips rows it already has.
-2. Delete the old speedtest job under **System > Settings > Cron**, if you had one, and set up the schedule here instead.
-3. Remove `os-speedtest-community` on the Plugins page. Its Ookla `speedtest` package is not removed with it: `pkg delete speedtest` if you no longer want it. The old CSV stays on disk; delete it once you have checked the import.
+1. Delete the old speedtest job under **System > Settings > Cron**, if you had one.
+2. Remove `os-speedtest-community` on the Plugins page. Its Ookla `speedtest` package is not removed with it: `pkg delete speedtest` if you no longer want it.
+3. Install `os-speedtest-surfhost` as above and set up the schedule on its Settings tab.
 
 ## Remove
 
-1. On the Speedtest tab click **Remove** to delete the test program (the Ookla binary, or the speedtest-cli package).
+1. Remove the test program first (the Ookla binary or the speedtest-cli package), in a root shell:
+   `sh /usr/local/opnsense/scripts/OPNsense/SpeedtestSurfHost/install_backend.sh remove`
 2. Remove the plugin on **System > Firmware > Plugins**.
 3. The history is kept in `/var/db/speedtest-surfhost`; `rm -rf /var/db/speedtest-surfhost` removes it.
 
@@ -72,7 +73,7 @@ Both plugins have their own menu entry and files, so they can be installed at th
 - History: `/var/db/speedtest-surfhost/results.csv` (same columns as os-speedtest-community)
 - Ookla binary: `/usr/local/libexec/speedtest-surfhost/speedtest`
 - `configctl speedtestsurfhost run default` runs a test from the shell; also selectable as "Run speedtest (SurfHost)" under System > Settings > Cron
-- API: `/api/speedtestsurfhost/service/{version,serverlist,run,stat,log,recent,deletelog,import,install,reconfigure}`, `/api/speedtestsurfhost/download/csv`
+- API: `/api/speedtestsurfhost/service/{version,serverlist,run,stat,log,recent,deletelog,reconfigure}`, `/api/speedtestsurfhost/download/csv`
 
 ## Maintaining
 
